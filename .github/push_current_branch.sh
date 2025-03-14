@@ -1,5 +1,5 @@
 #!/bin/bash
-# filepath: /Users/phuonglq/Desktop/_WorkSpace/Udemy/Practice/JS Game/MemoryGame/commit.sh
+# filepath: /Users/phuonglq/Desktop/_WorkSpace/Udemy/Practice/JS Game/MemoryGame/.github/push_current_branch.sh
 
 # Check if in a git repository
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
@@ -20,10 +20,20 @@ fi
 current_branch=$(git branch --show-current)
 
 # Get list of changed files
-changed_files=$(git diff --name-only --staged | xargs -n1 basename | sort | uniq | tr '\n' ' ')
+changed_files=$(git diff --name-only --staged | xargs -n1 basename | sort | uniq)
+
+# Format the changed files list for the commit message
+if [ $(echo "$changed_files" | wc -l) -gt 3 ]; then
+  # If more than 3 files changed, show count instead of listing all
+  file_count=$(echo "$changed_files" | wc -l)
+  files_for_message="$file_count files"
+else
+  # Join files with "and" for better readability
+  files_for_message=$(echo "$changed_files" | paste -sd ", " - | sed 's/, \([^,]*\)$/ and \1/')
+fi
 
 # Create commit message
-commit_message="$current_branch: Update $changed_files"
+commit_message="$current_branch: Update $files_for_message"
 
 # Commit with the generated message
 git commit -m "$commit_message"
