@@ -152,7 +152,7 @@ img.back-image {
   }
 }
 
-@keyframes long-tall {
+@keyframes long {
   0% {
     transform: translateY(0);
     opacity: 1;
