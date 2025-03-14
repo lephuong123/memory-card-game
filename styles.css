@@ -141,7 +141,7 @@ img.back-image {
   z-index: 1;
 }
 
-/* @keyframes fall {
+@keyframes fall {
   0% {
     transform: translateY(0);
     opacity: 1;
@@ -161,4 +161,4 @@ img.back-image {
     transform: translateY(100vh);
     opacity: 0;
   }
-} */
+}

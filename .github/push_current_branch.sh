@@ -1,41 +1,44 @@
 #!/bin/bash
+# filepath: /Users/phuonglq/Desktop/_WorkSpace/Udemy/Practice/JS Game/MemoryGame/.github/push_current_branch.sh
+
+# Get current branch name
+current_branch=$(git branch --show-current)
 
 # Add all changes to staging
 git add .
 
-# Get current branch name
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# Get count of changed files
+changed_files=$(git diff --cached --numstat | wc -l | tr -d '[:space:]')
 
-# Count modified files
-MODIFIED_COUNT=$(git status --porcelain | wc -l | tr -d ' ')
-
-# Get main file type changed
-FILE_TYPE=$(git status --porcelain | awk '{print $2}' | grep -o '\.[^\.]*$' | sort | uniq -c | sort -nr | head -1 | awk '{print $2}' | cut -c 2-)
-if [ -z "$FILE_TYPE" ]; then
-  FILE_TYPE="files"
-fi
-
-# Determine type of change based on branch name
-if [[ $BRANCH == *"feature"* ]]; then
-  CHANGE_TYPE="Feature development"
-elif [[ $BRANCH == *"fix"* || $BRANCH == *"bug"* ]]; then
-  CHANGE_TYPE="Bug fix"
-elif [[ $BRANCH == *"refactor"* ]]; then
-  CHANGE_TYPE="Code refactoring"
-elif [[ $BRANCH == *"docs"* ]]; then
-  CHANGE_TYPE="Documentation"
+# Determine change type based on branch name prefix
+if [[ $current_branch == feature/* ]]; then
+    change_type="Feature"
+elif [[ $current_branch == fix/* || $current_branch == bugfix/* ]]; then
+    change_type="Fix"
+elif [[ $current_branch == refactor/* ]]; then
+    change_type="Refactor"
+elif [[ $current_branch == docs/* ]]; then
+    change_type="Documentation"
+elif [[ $current_branch == style/* ]]; then
+    change_type="Style"
+elif [[ $current_branch == test/* ]]; then
+    change_type="Test"
+elif [[ $current_branch == chore/* ]]; then
+    change_type="Chore"
 else
-  CHANGE_TYPE="Update"
+    change_type="Update"
 fi
 
 # Create commit message
-COMMIT_MESSAGE="[$BRANCH]: $CHANGE_TYPE - $MODIFIED_COUNT $FILE_TYPE files"
+branch_name=$(echo $current_branch | sed 's/^[^\/]*\///')
+commit_message="${change_type}: ${branch_name} (${changed_files} files)"
 
 # Commit with the generated message
-git commit -m "$COMMIT_MESSAGE"
+echo "Committing with message: $commit_message"
+git commit -m "$commit_message"
 
-# Push to remote repository
-git push origin $BRANCH
+# Push to the current branch
+echo "Pushing to origin/$current_branch"
+git push origin $current_branch
 
-echo "✅ Successfully committed and pushed to $BRANCH"
-echo "📝 Commit message: $COMMIT_MESSAGE"
+echo "Changes committed and pushed successfully!"
