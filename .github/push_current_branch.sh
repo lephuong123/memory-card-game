@@ -1,26 +1,35 @@
 #!/bin/bash
-# filepath: /Users/phuonglq/Desktop/_WorkSpace/Udemy/Practice/JS Game/MemoryGame/.github/push_current_branch.sh
+# filepath: /Users/phuonglq/Desktop/_WorkSpace/Udemy/Practice/JS Game/MemoryGame/commit.sh
 
-# Get the current branch name
-BRANCH_NAME=$(git symbolic-ref --short HEAD)
-
-# Check if commit message was provided
-if [ -z "$1" ]; then
-  echo "Error: Please provide a commit message."
-  echo "Usage: ./commit.sh \"your commit message\""
+# Check if in a git repository
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+  echo "Error: Not in a git repository"
   exit 1
 fi
 
 # Add all changes
-echo "Adding all changes..."
 git add .
 
-# Create commit with branch name and message
-echo "Creating commit..."
-git commit -m "[$BRANCH_NAME] $1"
+# Check if there are changes to commit
+if git diff-index --quiet HEAD --; then
+  echo "No changes to commit"
+  exit 0
+fi
 
-# Push to current branch
-echo "Pushing to $BRANCH_NAME branch..."
-git push origin $BRANCH_NAME
+# Get current branch name
+current_branch=$(git branch --show-current)
 
-echo "Done! Changes committed and pushed to $BRANCH_NAME."
+# Get list of changed files
+changed_files=$(git diff --name-only --staged | xargs -n1 basename | sort | uniq | tr '\n' ' ')
+
+# Create commit message
+commit_message="$current_branch: Update $changed_files"
+
+# Commit with the generated message
+git commit -m "$commit_message"
+
+# Push to the current branch
+git push origin $current_branch
+
+echo "Changes committed and pushed successfully"
+echo "Commit message: $commit_message"
