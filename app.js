@@ -221,11 +221,11 @@ function createStars() {
     star.remove();
   });
 
-  // star.style.top = `${randomY}px`;
-  // document.body.appendChild(star);
-  // setTimeout(() => {
-  //   star.remove();
-  // }, 1000);
+  star.style.top = `${randomY}px`;
+  document.body.appendChild(star);
+  setTimeout(() => {
+    star.remove();
+  }, 1000);
 }
 loadCards();
 
