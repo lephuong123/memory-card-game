@@ -1,34 +1,41 @@
 #!/bin/bash
 
-# Check if in a git repository
-if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-  echo "Error: Not in a git repository"
-  exit 1
-fi
-
-# Add all changes
+# Add all changes to staging
 git add .
 
-# Check if there are changes to commit
-if git diff-index --quiet HEAD --; then
-  echo "No changes to commit"
-  exit 0
+# Get current branch name
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Count modified files
+MODIFIED_COUNT=$(git status --porcelain | wc -l | tr -d ' ')
+
+# Get main file type changed
+FILE_TYPE=$(git status --porcelain | awk '{print $2}' | grep -o '\.[^\.]*$' | sort | uniq -c | sort -nr | head -1 | awk '{print $2}' | cut -c 2-)
+if [ -z "$FILE_TYPE" ]; then
+  FILE_TYPE="files"
 fi
 
-# Get current branch name
-current_branch=$(git branch --show-current)
+# Determine type of change based on branch name
+if [[ $BRANCH == *"feature"* ]]; then
+  CHANGE_TYPE="Feature development"
+elif [[ $BRANCH == *"fix"* || $BRANCH == *"bug"* ]]; then
+  CHANGE_TYPE="Bug fix"
+elif [[ $BRANCH == *"refactor"* ]]; then
+  CHANGE_TYPE="Code refactoring"
+elif [[ $BRANCH == *"docs"* ]]; then
+  CHANGE_TYPE="Documentation"
+else
+  CHANGE_TYPE="Update"
+fi
 
-# Extract feature name from branch (assuming branch naming like feature/add-login)
-feature_name=$(echo "$current_branch" | sed 's/.*\///' | tr '-' ' ')
-
-# Create a more descriptive commit message based on branch name
-commit_message="$current_branch: Update $feature_name functionality"
+# Create commit message
+COMMIT_MESSAGE="[$BRANCH]: $CHANGE_TYPE - $MODIFIED_COUNT $FILE_TYPE files"
 
 # Commit with the generated message
-git commit -m "$commit_message"
+git commit -m "$COMMIT_MESSAGE"
 
-# Push to the current branch
-git push origin $current_branch
+# Push to remote repository
+git push origin $BRANCH
 
-echo "Changes committed and pushed successfully"
-echo "Commit message: $commit_message"
+echo "✅ Successfully committed and pushed to $BRANCH"
+echo "📝 Commit message: $COMMIT_MESSAGE"
