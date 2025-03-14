@@ -228,3 +228,5 @@ function createStars() {
   // }, 1000);
 }
 loadCards();
+
+console.log("app.js loaded");
